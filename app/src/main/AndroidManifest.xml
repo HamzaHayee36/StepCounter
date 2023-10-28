@@ -17,9 +17,11 @@
         android:theme="@style/Theme.StepCounter"
         tools:targetApi="31">
         <activity
-            android:name=".TripListActivity"
+            android:name=".TripDetailsActivity"
             android:exported="false" />
-        <!-- Your Google Maps API key -->
+        <activity
+            android:name=".TripListActivity"
+            android:exported="false" /> <!-- Your Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBoLVBYgNgQni8b2Vd_XfOQMHulJ2t1xIo" />

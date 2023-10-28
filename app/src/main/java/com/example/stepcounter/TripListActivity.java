@@ -1,7 +1,9 @@
 package com.example.stepcounter;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,7 +37,12 @@ public class TripListActivity extends AppCompatActivity {
             return;
         }
 
-        TripAdapter adapter = new TripAdapter(tripList);
+        TripAdapter adapter = new TripAdapter(tripList, position -> {
+            String tripData = tripList.get(position);
+            Intent intent = new Intent(TripListActivity.this, TripDetailsActivity.class);
+            intent.putExtra("trip_data", tripData);
+            startActivity(intent);
+        });
         recyclerView.setAdapter(adapter);
     }
 
