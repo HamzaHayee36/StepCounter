@@ -27,8 +27,9 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.TripViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
-        String trip = tripList.get(position);
-        holder.tripTextView.setText(trip);
+        String tripData = tripList.get(position);
+        holder.tripNumber.setText((position + 1) + ".");  // Display the trip number
+        holder.tripTextView.setText(tripData);            // Display the trip data
     }
 
     @Override
@@ -38,10 +39,12 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.TripViewHolder
 
     static class TripViewHolder extends RecyclerView.ViewHolder {
 
+        final TextView tripNumber;  // Added this line for the numbering
         final TextView tripTextView;
 
         TripViewHolder(View itemView) {
             super(itemView);
+            tripNumber = itemView.findViewById(R.id.tripNumber);  // Added this line for the numbering
             tripTextView = itemView.findViewById(R.id.tripTextView);
         }
     }
