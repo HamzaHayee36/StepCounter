@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String DAILY_GOAL_PREF = "DailyGoalPreferences";
     private static final String DAILY_GOAL_KEY = "DailyGoal";
     private static final String DONT_SHOW_DIALOG_KEY = "DontShowDialog";
-    private int userStepGoal = 10; // default is 10
+    private int userStepGoal = 10000; // default is 10000
     private ProgressBar stepProgressBar;
     private TextView percentageTextView;
 
@@ -123,8 +123,11 @@ public class MainActivity extends AppCompatActivity {
                 stepProgressBar.setProgress(stepsTaken);
                 // Calculate the percentage of the goal achieved
                 int percentage = (int) ((double) stepsTaken / userStepGoal * 100);
-                percentageTextView.setText(percentage + "%");
 
+                // Check if goal is achieved
+                if (stepsTaken >= userStepGoal) {
+                    showGoalAchievedDialog();
+                }
             }
         }
 
@@ -271,6 +274,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     userStepGoal = Integer.parseInt(input.getText().toString());
                     stepProgressBar.setMax(userStepGoal);
+                    // Show the progress bar and percentage text view
+                    stepProgressBar.setVisibility(View.VISIBLE);
+                    percentageTextView.setVisibility(View.VISIBLE);
                 }
             });
             builder.setNegativeButton("Cancel", null);
@@ -282,5 +288,17 @@ public class MainActivity extends AppCompatActivity {
             builder.show();
         }
     }
+    private void showGoalAchievedDialog() {
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("Congratulations!")
+                .setMessage("You've achieved your step goal! Would you like to set a new goal?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        showSetGoalDialogIfNeeded();                    }
+                })
+                .setNegativeButton("Not Now", null)
+                .show();
+    }
+
 
 }
