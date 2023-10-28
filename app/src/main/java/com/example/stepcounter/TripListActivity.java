@@ -1,15 +1,17 @@
 package com.example.stepcounter;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,6 +23,15 @@ public class TripListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private List<String> tripList = new ArrayList<>();
+
+    private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!isInternetAvailable()) {
+                Toast.makeText(TripListActivity.this, "Internet is disconnected.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,21 +49,22 @@ public class TripListActivity extends AppCompatActivity {
         }
 
         TripAdapter adapter = new TripAdapter(tripList, position -> {
-            String tripData = tripList.get(position);
-            Intent intent = new Intent(TripListActivity.this, TripDetailsActivity.class);
-            intent.putExtra("trip_data", tripData);
-            startActivity(intent);
+            if (isInternetAvailable()) {
+                String tripData = tripList.get(position);
+                Intent intent = new Intent(TripListActivity.this, TripDetailsActivity.class);
+                intent.putExtra("trip_data", tripData);
+                startActivity(intent);
+            } else {
+                Toast.makeText(TripListActivity.this, "Internet is disconnected. Please turn it on.", Toast.LENGTH_SHORT).show();
+            }
         });
         recyclerView.setAdapter(adapter);
     }
 
     private void loadTrips() {
-        // Accessing the TRIPS_KEY from MainActivity
         String key = MainActivity.TRIPS_KEY;
-
         SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         Set<String> trips = sharedPreferences.getStringSet(key, new HashSet<>());
-        int counter = 1;
         if (trips != null) {
             for (String trip : trips) {
                 String[] details = trip.split(",");
@@ -61,7 +73,6 @@ public class TripListActivity extends AppCompatActivity {
                 String formattedLongitude = formatCoordinate(Double.parseDouble(details[2]));
                 String formattedTrip = formattedTime + ", " + formattedLatitude + ", " + formattedLongitude;
                 tripList.add(formattedTrip);
-                counter++;
             }
         }
     }
@@ -73,5 +84,25 @@ public class TripListActivity extends AppCompatActivity {
 
     private String formatCoordinate(double coordinate) {
         return String.format("%.2f°", coordinate);
+    }
+
+    private boolean isInternetAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(connectivityReceiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(connectivityReceiver);
     }
 }
