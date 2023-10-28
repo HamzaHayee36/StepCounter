@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
     private void stopRecording() {
         sensorManager.unregisterListener(stepDetectorListener);
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        stepCountTextView.setText("Steps: 0"); // Reset the step count displayed on the screen
     }
 
     private LocationRequest createLocationRequest() {
