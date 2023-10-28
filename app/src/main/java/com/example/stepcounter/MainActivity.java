@@ -297,11 +297,19 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("You've achieved your step goal! Would you like to set a new goal?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        showSetGoalDialogIfNeeded();                    }
+                        showSetGoalDialogIfNeeded();
+                    }
                 })
-                .setNegativeButton("Not Now", null)
+                .setNegativeButton("Not Now", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // Hide the progress bar and percentage text view
+                        stepProgressBar.setVisibility(View.GONE);
+                        percentageTextView.setVisibility(View.GONE);
+                        // Reset the step count
+                        stepsTaken = 0;
+                        stepCountTextView.setText("Steps: 0");
+                    }
+                })
                 .show();
     }
-
-
 }
