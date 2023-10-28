@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 stepProgressBar.setProgress(stepsTaken);
                 // Calculate the percentage of the goal achieved
                 int percentage = (int) ((double) stepsTaken / userStepGoal * 100);
+                percentageTextView.setText(percentage + "%");  // <-- This line updates the percentage TextView
 
                 // Check if goal is achieved
                 if (stepsTaken >= userStepGoal) {
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -274,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     userStepGoal = Integer.parseInt(input.getText().toString());
                     stepProgressBar.setMax(userStepGoal);
+                    percentageTextView.setText("0%");
                     // Show the progress bar and percentage text view
                     stepProgressBar.setVisibility(View.VISIBLE);
                     percentageTextView.setVisibility(View.VISIBLE);
