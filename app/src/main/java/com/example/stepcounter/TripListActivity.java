@@ -49,7 +49,9 @@ public class TripListActivity extends AppCompatActivity {
             for (String trip : trips) {
                 String[] details = trip.split(",");
                 String formattedTime = formatDate(Long.parseLong(details[0]));
-                String formattedTrip = formattedTime + ", " + details[1] + ", " + details[2];
+                String formattedLatitude = formatCoordinate(Double.parseDouble(details[1]));
+                String formattedLongitude = formatCoordinate(Double.parseDouble(details[2]));
+                String formattedTrip = formattedTime + ", " + formattedLatitude + ", " + formattedLongitude;
                 tripList.add(formattedTrip);
             }
         }
@@ -58,5 +60,9 @@ public class TripListActivity extends AppCompatActivity {
     private String formatDate(long timestamp) {
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
         return sdf.format(new Date(timestamp));
+    }
+
+    private String formatCoordinate(double coordinate) {
+        return String.format("%.2f°", coordinate);
     }
 }
