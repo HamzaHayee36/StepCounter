@@ -2,6 +2,8 @@ package com.example.stepcounter;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -26,16 +28,22 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String TRIPS_KEY = "trips";
     private SensorManager sensorManager;
     private Sensor stepDetectorSensor;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private TextView stepCountTextView;
     private int stepsTaken = 0;
     private static final int PERMISSION_REQUEST_CODE = 101;
+
+    private SharedPreferences sharedPreferences;
+    static final String SHARED_PREFERENCES_NAME = "TripsData";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+
 
         if (stepDetectorSensor == null) {
             Toast.makeText(this, "Step Detector Sensor not available!", Toast.LENGTH_SHORT).show();
@@ -104,7 +114,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             for (Location location : locationResult.getLocations()) {
-                // Handle location updates as needed
+                // Save location details when a new location is received
+                saveTripDetails(location);
             }
         }
     };
@@ -136,7 +147,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateToTripsList() {
-        // TODO: Navigate to the trip list
+        // Start the TripListActivity
+        Intent intent = new Intent(MainActivity.this, TripListActivity.class);
+        startActivity(intent);
+    }
+
+
+    // Save trip details to SharedPreferences
+    private void saveTripDetails(Location location) {
+        Set<String> existingTrips = sharedPreferences.getStringSet(TRIPS_KEY, new HashSet<>());
+        Set<String> updatedTrips = new HashSet<>(existingTrips);
+
+        String tripDetails = System.currentTimeMillis() + "," + location.getLatitude() + "," + location.getLongitude();
+        updatedTrips.add(tripDetails);
+
+        sharedPreferences.edit().putStringSet(TRIPS_KEY, updatedTrips).apply();
     }
 
     private void requestRequiredPermissions() {
