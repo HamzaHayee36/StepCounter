@@ -45,6 +45,7 @@ public class TripListActivity extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         Set<String> trips = sharedPreferences.getStringSet(key, new HashSet<>());
+        int counter = 1;
         if (trips != null) {
             for (String trip : trips) {
                 String[] details = trip.split(",");
@@ -53,6 +54,7 @@ public class TripListActivity extends AppCompatActivity {
                 String formattedLongitude = formatCoordinate(Double.parseDouble(details[2]));
                 String formattedTrip = formattedTime + ", " + formattedLatitude + ", " + formattedLongitude;
                 tripList.add(formattedTrip);
+                counter++;
             }
         }
     }
