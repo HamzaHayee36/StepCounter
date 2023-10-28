@@ -1,10 +1,12 @@
 package com.example.stepcounter;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -17,8 +19,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,11 +51,16 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     static final String SHARED_PREFERENCES_NAME = "TripsData";
 
+    private static final String DAILY_GOAL_PREF = "DailyGoalPreferences";
+    private static final String DAILY_GOAL_KEY = "DailyGoal";
+    private static final String DONT_SHOW_DIALOG_KEY = "DontShowDialog";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        showSetGoalDialogIfNeeded();
         promptUserToEnableNotifications();
         createNotificationChannel();
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -230,5 +239,30 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    private void showSetGoalDialogIfNeeded() {
+        SharedPreferences prefs = getSharedPreferences(DAILY_GOAL_PREF, MODE_PRIVATE);
+        boolean dontShowDialog = prefs.getBoolean(DONT_SHOW_DIALOG_KEY, false);
 
+        if (!dontShowDialog) {
+            View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_set_goal, null);
+            final EditText stepGoalEditText = dialogView.findViewById(R.id.stepGoalEditText);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Set Your Daily Step Goal!")
+                    .setView(dialogView)
+                    .setPositiveButton("Set Goal", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            int goal = Integer.parseInt(stepGoalEditText.getText().toString());
+                            prefs.edit().putInt(DAILY_GOAL_KEY, goal).apply();
+                        }
+                    })
+                    .setNegativeButton("Maybe Later", null)
+                    .setNeutralButton("Don't Ask Again", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            prefs.edit().putBoolean(DONT_SHOW_DIALOG_KEY, true).apply();
+                        }
+                    })
+                    .show();
+        }
+    }
 }
