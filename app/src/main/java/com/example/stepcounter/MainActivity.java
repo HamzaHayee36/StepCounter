@@ -19,10 +19,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String DAILY_GOAL_PREF = "DailyGoalPreferences";
     private static final String DAILY_GOAL_KEY = "DailyGoal";
     private static final String DONT_SHOW_DIALOG_KEY = "DontShowDialog";
+    private int userStepGoal = 10; // default is 10
+    private ProgressBar stepProgressBar;
+    private TextView percentageTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
         stepCountTextView = findViewById(R.id.stepCountTextView);
         stepCountTextView.setText("Steps: 0");
 
+        stepProgressBar = findViewById(R.id.stepProgressBar);
+        percentageTextView = findViewById(R.id.percentageTextView);
         Button startButton = findViewById(R.id.startButton);
         Button endButton = findViewById(R.id.endButton);
         FloatingActionButton stepsFab = findViewById(R.id.stepsFab);
@@ -112,6 +119,12 @@ public class MainActivity extends AppCompatActivity {
             if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
                 stepsTaken += 1;
                 stepCountTextView.setText("Steps: " + stepsTaken);
+                // Update the progress bar
+                stepProgressBar.setProgress(stepsTaken);
+                // Calculate the percentage of the goal achieved
+                int percentage = (int) ((double) stepsTaken / userStepGoal * 100);
+                percentageTextView.setText(percentage + "%");
+
             }
         }
 
@@ -202,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     private void sendNotification(String title, String message) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -228,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
+
     private void promptUserToEnableNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -239,30 +254,33 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     private void showSetGoalDialogIfNeeded() {
         SharedPreferences prefs = getSharedPreferences(DAILY_GOAL_PREF, MODE_PRIVATE);
         boolean dontShowDialog = prefs.getBoolean(DONT_SHOW_DIALOG_KEY, false);
 
         if (!dontShowDialog) {
-            View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_set_goal, null);
-            final EditText stepGoalEditText = dialogView.findViewById(R.id.stepGoalEditText);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Set Your Daily Step Goal");
+            final EditText input = new EditText(MainActivity.this);
+            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+            builder.setView(input);
 
-            new AlertDialog.Builder(this)
-                    .setTitle("Set Your Daily Step Goal!")
-                    .setView(dialogView)
-                    .setPositiveButton("Set Goal", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            int goal = Integer.parseInt(stepGoalEditText.getText().toString());
-                            prefs.edit().putInt(DAILY_GOAL_KEY, goal).apply();
-                        }
-                    })
-                    .setNegativeButton("Maybe Later", null)
-                    .setNeutralButton("Don't Ask Again", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            prefs.edit().putBoolean(DONT_SHOW_DIALOG_KEY, true).apply();
-                        }
-                    })
-                    .show();
+            builder.setPositiveButton("Set Goal", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    userStepGoal = Integer.parseInt(input.getText().toString());
+                    stepProgressBar.setMax(userStepGoal);
+                }
+            });
+            builder.setNegativeButton("Cancel", null);
+            builder.setNeutralButton("Don't Ask Again", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    prefs.edit().putBoolean(DONT_SHOW_DIALOG_KEY, true).apply();
+                }
+            });
+            builder.show();
         }
     }
+
 }
