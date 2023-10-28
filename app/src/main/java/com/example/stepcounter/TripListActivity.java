@@ -8,7 +8,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +46,17 @@ public class TripListActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         Set<String> trips = sharedPreferences.getStringSet(key, new HashSet<>());
         if (trips != null) {
-            tripList.addAll(trips);
+            for (String trip : trips) {
+                String[] details = trip.split(",");
+                String formattedTime = formatDate(Long.parseLong(details[0]));
+                String formattedTrip = formattedTime + ", " + details[1] + ", " + details[2];
+                tripList.add(formattedTrip);
+            }
         }
+    }
+
+    private String formatDate(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
+        return sdf.format(new Date(timestamp));
     }
 }
